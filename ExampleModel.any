@@ -4,7 +4,7 @@
 Main = {
   
   
-  VideoCamera MyCam (UP_DIRECTION = y, START_FRAME = 6, _DEBUG=0) = 
+  VideoCamera MyCam (UP_DIRECTION = y) = 
   {
    LookAtPoint = Main.MyModel.Femur.r-{-0.3,0.10,0};   
    Analysis = {

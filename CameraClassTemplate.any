@@ -39,6 +39,7 @@
 
 */
 
+#define _CAMERA_MAIN_FILE_DIRECTORY_ ANYBODY_PATH_MAINFILEDIR
 
 #class_template VideoCamera ( 
   VIDEO_NAME = "Cam1",
@@ -47,7 +48,6 @@
   HEIGHT = 1080 ,
   IMAGE_EXT = "png",
   COUNTER_FORMAT = "%05d",
-  OUTPUT_PATH = ".",
   FFMPEG_PATH = "ffmpeg.exe",
   START_FRAME = 0,
   OVER_WRITE = 1,
@@ -56,7 +56,7 @@
   _CLEAN_UP_IMAGES = 1
   ) 
 {
-
+#var AnyFileVar OuputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
 #var AnyObjectPtrVar CounterPtr = &_counter_flag ;
 AnyIntVar _counter_flag = -1;
 #var AnyVec3 LookAtPoint = DesignVar({0,10,0});
@@ -93,7 +93,7 @@ AnyOperationSequence Make_Recording =
   {
       FileName = "cmd.exe";  
       #var Arguments = "/C start "+ FilePathCompleteOf(..Camera.rec.ConvertVideo.out_file);
-      #var WorkDir = OUTPUT_PATH;
+      #var WorkDir =  FilePathRelativeOf(..OuputPath) ;
       #var Show =  _DEBUG;
       Wait = Off;
   };
@@ -101,7 +101,7 @@ AnyOperationSequence Make_Recording =
 
 AnyOperationSequence Preview_Camera_View =  
 {
-    AnyFileVar preview_file = OUTPUT_PATH +"/" + VIDEO_NAME + "_Camera_Preview.png";  
+    AnyFileVar preview_file = FilePathRelativeOf(.OuputPath) +"/" + VIDEO_NAME + "_Camera_Preview.png";  
     AnyOperationSetValue SetFilename= 
     {
         Source = {&.preview_file}; 
@@ -155,7 +155,7 @@ AnyOperationSequence Preview_Camera_View =
       AnyStringVar F = "Hack- Do not delete";
       // If CounterPtr is not set (i.e. points to -1) then use the recorder counter else use CounterPtr. 
       AnyInt Cnt = iffun(eqfun(Obj2Num(..CounterPtr),-1),Counter, round(Obj2Num(..CounterPtr)));
-      FileName = OUTPUT_PATH + "/"+ VIDEO_NAME  + strval(Cnt,COUNTER_FORMAT )+ "." + IMAGE_EXT;
+      FileName = FilePathRelativeOf(..OuputPath) + "/"+ VIDEO_NAME  + strval(Cnt,COUNTER_FORMAT )+ "." + IMAGE_EXT;
       #var pxWidth = WIDTH ;
       #var pxHeight = HEIGHT;
       #var Trig = DesignVar(Off);
@@ -179,9 +179,9 @@ AnyOperationSequence Preview_Camera_View =
         #var FileName = "cmd.exe";
         #var AnyStringVar inputfile =  VIDEO_NAME + COUNTER_FORMAT  +"." + IMAGE_EXT;
         
-        #var AnyFileVar out_file = OUTPUT_PATH + "/"+ VIDEO_NAME + ".mp4";
-        
-        #var Arguments = "/C "+ FFMPEG_PATH + " "+iffun(OVER_WRITE, "-y ","") + "-r 10 -start_number " +
+        #var AnyFileVar out_file = FilePathRelativeOf(...OuputPath) + "/"+ VIDEO_NAME + ".mp4";
+        AnyFileVar ffmpegpath = FFMPEG_PATH; 
+        #var Arguments = "/C "+ FilePathCompleteOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r 10 -start_number " +
         strval(START_FRAME,COUNTER_FORMAT) + " -i "+strquote(inputfile)+ " -c:v "+
         VIDEO_OUTPUT+" -b:v 8000k -vf "+strquote("fps=30,format=yuv420p")+" -vf "+
         strquote("scale=trunc(iw/2)*2:trunc(ih/2)*2")+" -metadata author="+
@@ -192,7 +192,7 @@ AnyOperationSequence Preview_Camera_View =
         ;
         #endif
 
-        #var WorkDir = OUTPUT_PATH;
+        #var WorkDir = FilePathCompleteOf(...OuputPath) ;
         #var Show = _DEBUG ;
       };  
       AnyOperationSequence RemoveImageFiles = 
@@ -208,7 +208,7 @@ AnyOperationSequence Preview_Camera_View =
           ;
           #endif
 
-          #var WorkDir = OUTPUT_PATH;
+          #var WorkDir = FilePathCompleteOf(....OuputPath) ;
           #var Show = _DEBUG ;
         };   
       };
