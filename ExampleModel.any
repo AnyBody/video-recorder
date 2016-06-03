@@ -1,19 +1,37 @@
-// Exercise template for the advanced joint modeling course
+// Example Model using the CAMERA template class
+// 
+// See the class template for detailed usage of the camera class
 #include "CameraClassTemplate.any"
 
 Main = {
-  
-  
-  VideoCamera MyCam (UP_DIRECTION = y) = 
-  {
-   LookAtPoint = Main.MyModel.Femur.r-{-0.3,0.10,0};   
-   Analysis = {
-     AnyOperation &ref = Main.MyStudy.InverseDynamics; 
-   };
-  };
 
-  // The actual body model goes in this folder
-  AnyFolder MyModel = {
+  // This is a simple example of using the camera class to create videos.
+  VideoCamera MyCam (UP_DIRECTION = y, SKIP_FRAMES = 6) = 
+  {
+       // The point the camera focus on
+       LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
+       
+       // The vertical field of view in meters at the LookAtPoint
+       VerticalFieldOfView = 1;
+       
+       // The direction which the camera is placed
+       // (In global coordinates with respect to the LookAtPoint)
+       LookPoint2Camera_direction = {1, 1, -1};
+       
+       // The background color used for the video
+       BackgroundColor = {1,1,1};
+       
+       // The operations which should be included in the video.
+       Analysis = {
+           AnyOperation &ref = Main.MyStudy.InverseDynamics;
+       };
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////  The code below is just an example model used to demonstrate Camera class /////
+/////////////////////////////////////////////////////////////////////////////////////
+
+AnyFolder MyModel = {
 
     // Global Reference Frame
     AnyFixedRefFrame GlobalRef = {

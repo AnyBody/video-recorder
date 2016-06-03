@@ -10,16 +10,30 @@ The camera can be configured to be both statics or a moving camera.
 
 ```c++
 // Include the Camera template class
-#include "CameraClassTemplate.any"
+#include "Path/to/Video_Camera/CameraClassTemplate.any"
 
 Main = {
 
-    VideoCamera MyCam (UP_DIRECTION = y) = {
-      Analysis = {
-         AnyOperation &ref = Main.MyStudy.InverseDynamics; 
+  VideoCamera MyCam (UP_DIRECTION = y) = 
+  {
+       // The point the camera focus on (Can be a moving point)
+       LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
+       
+       // The vertical field of view in meters
+       VerticalFieldOfView = 1;
+       
+       // The direction which the camera is placed
+       // (In global coordinate with respect to the LookAtPoint. Can also be a moving vector)
+       LookPoint2Camera_direction = {1, 1, -1};
+       
+       // The background color used for the video
+       BackgroundColor = {1,1,1};
+       
+       // The operations which should be included in the video.
+       Analysis = {
+           AnyOperation &ref = Main.MyStudy.InverseDynamics;
        };
-      LookAtPoint = Main.MyModel.Femur.r-{-0.3,0.10,0};   
-    };
+};
 
 };
 
