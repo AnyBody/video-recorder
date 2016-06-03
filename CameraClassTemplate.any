@@ -31,10 +31,7 @@ VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
 
    // The background color used for the video
    BackgroundColor = {1,1,1};
-   
-   // Pointer to a alternative counter i.e. Main.Study.iStep (Optional)
-   CounterPtr = &Main.Study.iStep;
-   
+      
    // The output path where the video is saved (Defaults to the main file directory)
    AnyFileVar OuputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
    
@@ -51,9 +48,7 @@ VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
 */
 
 #define _CAMERA_MAIN_FILE_DIRECTORY_ ANYBODY_PATH_MAINFILEDIR
-#ifdef ANYBODY_6_1_0 
-#define OBJ2NUM_AVAILABLE
-#endif
+
 
 #class_template VideoCamera ( 
   VIDEO_NAME = "Cam1",
@@ -73,14 +68,6 @@ VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
   
 /// The output path where the video is saved 
 #var AnyFileVar OuputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
-
-#ifdef OBJ2NUM_AVAILABLE
-/// Pointer to a alternative counter i.e. Main.Study.iStep (Optional)
-#var AnyObjectPtrVar CounterPtr = &_counter_flag ;
-
-/// Internal value to give CounterPtr a default value
-AnyIntVar _counter_flag = -1;
-#endif
 
 /// The point the camera focus on
 #var AnyVec3 LookAtPoint = DesignVar({0,0,0});
@@ -183,12 +170,7 @@ AnyOperationSequence Create_Video =
     
     AnyCamRecorder rec = {  
       AnyStringVar F = "Hack- Do not delete";
-      #ifdef OBJ2NUM_AVAILABLE
-      // If CounterPtr is not set (i.e. points to -1) then use the recorder counter else use CounterPtr. 
-      #var AnyInt _Counter = iffun(eqfun(Obj2Num(..CounterPtr),-1),Counter, round(Obj2Num(..CounterPtr)));
-      #else
       #var AnyInt _Counter = Counter;
-      #endif
       
       FileName = FilePathRelativeOf(..OuputPath) + "/"+ VIDEO_NAME  + strval(_Counter ,COUNTER_FORMAT )+ "." + IMAGE_EXT;
       #var pxWidth = WIDTH ;
