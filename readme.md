@@ -6,6 +6,8 @@ It can be included in any model, to produce videos with a single operation.
 
 The camera can be configured to be both statics or a moving camera. 
 
+![image](https://cloud.githubusercontent.com/assets/1038978/15822934/c01e714e-2bf8-11e6-9fa1-3a7b754b7372.png)
+
 ## Simple Example
 
 ```c++
