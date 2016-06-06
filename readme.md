@@ -6,8 +6,6 @@ It can be included in any model, to produce videos with a single operation.
 
 The camera can be configured to be both statics or a moving camera. 
 
-![image](https://cloud.githubusercontent.com/assets/1038978/15822934/c01e714e-2bf8-11e6-9fa1-3a7b754b7372.png)
-
 ## Simple Example
 
 ```c++
@@ -40,6 +38,16 @@ Main = {
 };
 
 ``` 
+
+## Creating the video:
+
+To create a video simply select and run the `Create_Video` operation. That will run the model and launch the video. 
+
+![image](https://cloud.githubusercontent.com/assets/1038978/15822983/f6fd6b8e-2bf8-11e6-88a4-f8d080f815e5.png)
+
+The video will by default be save together with the main file of the model. This can of course be customized as well. 
+
+
 
 ## Detailed use:
 
