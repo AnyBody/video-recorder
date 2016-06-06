@@ -6,7 +6,7 @@
 Main = {
 
   // This is a simple example of using the camera class to create videos.
-  VideoCamera MyCam (UP_DIRECTION = y, SKIP_FRAMES = 6) = 
+  VideoLookAtCamera MyCam (UP_DIRECTION = y, SKIP_FRAMES = 7) = 
   {
        // The point the camera focus on
        LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  

@@ -10,7 +10,7 @@ EXAMPLE:
 
 Main = {
 
-VideoCamera MyCam (
+VideoLookAtCamera MyCam (
 VIDEO_NAME = "MyVideo",  # File name of the video that will be created
 UP_DIRECTION = y,        # Orientation of the camera
 WIDTH = 1920,            # Width resolution of the video
@@ -50,7 +50,7 @@ VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
 #define _CAMERA_MAIN_FILE_DIRECTORY_ ANYBODY_PATH_MAINFILEDIR
 
 
-#class_template VideoCamera ( 
+#class_template VideoLookAtCamera ( 
   VIDEO_NAME = "Cam1",
   UP_DIRECTION = z,
   WIDTH = 1920,
