@@ -14,7 +14,7 @@ The camera can be configured to be both statics or a moving camera.
 
 Main = {
 
-  VideoCamera MyCam (UP_DIRECTION = y) = 
+  VideoLookAtCamera  MyCam (UP_DIRECTION = y) = 
   {
        // The point the camera focus on (Can be a moving point)
        LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
