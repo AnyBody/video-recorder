@@ -15,8 +15,11 @@ VIDEO_NAME = "MyVideo",  # File name of the video that will be created
 UP_DIRECTION = y,        # Orientation of the camera
 WIDTH = 1920,            # Width resolution of the video
 HEIGHT = 1080,           # Height resolution of the video
-SKIP_FRAMES = 10,         # Number of frames to skip when creating the video
+SKIP_FRAMES = 10,        # Number of frames to skip when creating the video
 VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
+INPUT_FRAME_RATE = 10    # The input framerate. This should be nStep/(tEnd-tStart) to 
+                           create videos that are runs at normal speed. 
+
 ) = 
 {
    // The point the camera focus on
@@ -62,7 +65,8 @@ VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
   OVER_WRITE = 1,
   _DEBUG = 0,
   VIDEO_OUTPUT = "mpeg4",
-  _CLEAN_UP_IMAGES = 1
+  _CLEAN_UP_IMAGES = 1,
+  INPUT_FRAME_RATE = 10
   ) 
 {
   
@@ -197,8 +201,11 @@ AnyOperationSequence Create_Video =
         #var AnyStringVar inputfile =  VIDEO_NAME + COUNTER_FORMAT  +"." + IMAGE_EXT;
         
         #var AnyFileVar out_file = FilePathRelativeOf(...OuputPath) + "/"+ VIDEO_NAME + ".mp4";
-        AnyFileVar ffmpegpath = FFMPEG_PATH; 
-        #var Arguments = "/C "+ FilePathCompleteOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r 10 -start_number " +
+        
+        #var AnyIntVar InputFrameRate = INPUT_FRAME_RATE; 
+        
+        #var AnyFileVar ffmpegpath = FFMPEG_PATH; 
+        #var Arguments = "/C "+ FilePathCompleteOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r " + strval(InputFrameRate) +  " -start_number " +
         strval(SKIP_FRAMES,COUNTER_FORMAT) + " -i "+strquote(inputfile)+ " -c:v "+
         VIDEO_OUTPUT+" -b:v 8000k -vf "+strquote("fps=30,format=yuv420p")+" -vf "+
         strquote("scale=trunc(iw/2)*2:trunc(ih/2)*2")+" -metadata author="+

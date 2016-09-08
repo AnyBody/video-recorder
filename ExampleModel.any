@@ -23,9 +23,9 @@ Main = {
        
        // The operations which should be included in the video.
        Analysis = {
-           AnyOperation &ref = Main.MyStudy.InverseDynamics;
+           AnyOperation &ref = Main.MyStudy.Replay;
        };
-};
+   };
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////  The code below is just an example model used to demonstrate Camera class /////
@@ -235,6 +235,7 @@ AnyViaPointMuscle Quadriceps = {
     AnyFolder &Model = .MyModel;
     Gravity = {0.0, -9.81, 0.0};
     nStep = 50;
+    tStart = 0;
     tEnd = 2.4;
     AnyVar MomentArm = Main.MyModel.Quadriceps.LmtDot/(Main.MyModel.Knee.Vel[0]+1.0e-10);
   };
