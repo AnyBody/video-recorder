@@ -105,12 +105,13 @@ AnyOperationSequence Show_Static_Preview =
     AnyOperationShellExec OpenPreview = 
     {
         FileName = "cmd.exe";  
-        #var Arguments = "/C start "+ FilePathCompleteOf(.preview_file)
+        #var Arguments = "/C "+"start "+ FilePathRelativeOf(.preview_file)
         #if _DEBUG
          +"&&timeout 5";
         #else
         ;
         #endif
+        WorkDir = _CAMERA_MAIN_FILE_DIRECTORY_;
         
         #var Show = _DEBUG;
     };
@@ -139,8 +140,8 @@ AnyOperationSequence Create_Video =
   AnyOperationShellExec PlayVideo = 
   {
       FileName = "cmd.exe";  
-      #var Arguments = "/C start "+ FilePathCompleteOf(..Camera.rec.ConvertVideo.out_file);
-      #var WorkDir =  FilePathRelativeOf(..OuputPath) ;
+      #var Arguments = "/C start "+ FilePathRelativeOf(..Camera.rec.ConvertVideo.out_file);
+      #var WorkDir =  FilePathCompleteOf(..OuputPath) ;
       #var Show =  _DEBUG;
       Wait = Off;
   };
@@ -205,7 +206,7 @@ AnyOperationSequence Create_Video =
         #var AnyIntVar InputFrameRate = INPUT_FRAME_RATE; 
         
         #var AnyFileVar ffmpegpath = FFMPEG_PATH; 
-        #var Arguments = "/C "+ FilePathCompleteOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r " + strval(InputFrameRate) +  " -start_number " +
+        #var Arguments = "/C "+ FileNameOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r " + strval(InputFrameRate) +  " -start_number " +
         strval(SKIP_FRAMES,COUNTER_FORMAT) + " -i "+strquote(inputfile)+ " -c:v "+
         VIDEO_OUTPUT+" -b:v 8000k -vf "+strquote("fps=30,format=yuv420p")+" -vf "+
         strquote("scale=trunc(iw/2)*2:trunc(ih/2)*2")+" -metadata author="+
@@ -216,7 +217,8 @@ AnyOperationSequence Create_Video =
         ;
         #endif
 
-        #var WorkDir = FilePathCompleteOf(...OuputPath) ;
+        AnyFileVar ffmpeg_dir = FilePathCompleteOf(ffmpegpath)+"/..";
+        #var WorkDir = ffmpeg_dir;
         #var Show = _DEBUG ;
       };  
       AnyOperationSequence RemoveImageFiles = 
@@ -225,7 +227,7 @@ AnyOperationSequence Create_Video =
         {
           
           #var FileName = "cmd.exe";
-          #var  Arguments = "/C del " + VIDEO_NAME +"*."+ IMAGE_EXT
+          #var  Arguments = "/C del " + strquote(VIDEO_NAME +"*."+ IMAGE_EXT)
           #if _DEBUG
           +"&&timeout 3";
           #else
