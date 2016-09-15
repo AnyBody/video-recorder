@@ -65,8 +65,7 @@ INPUT_FRAME_RATE = 10    # The input framerate. This should be nStep/(tEnd-tStar
   OVER_WRITE = 1,
   _DEBUG = 0,
   VIDEO_OUTPUT = "mpeg4",
-  _CLEAN_UP_IMAGES = 1,
-  INPUT_FRAME_RATE = 10
+  _CLEAN_UP_IMAGES = 1
   ) 
 {
   
@@ -92,6 +91,8 @@ INPUT_FRAME_RATE = 10    # The input framerate. This should be nStep/(tEnd-tStar
 /// The background color used for the video
 #var AnyVec3 BackgroundColor = DesignVar({1,1,1});
   
+#var AnyIntVar InputFrameRate = 10; 
+
 
 AnyOperationSequence Show_Static_Preview =  
 {
@@ -104,16 +105,15 @@ AnyOperationSequence Show_Static_Preview =
     AnyOperation &StartTrigger = .Camera.rec.TriggerOn;
     AnyOperationShellExec OpenPreview = 
     {
-        FileName = "cmd.exe";  
-        #var Arguments = "/C "+"start "+ FilePathRelativeOf(.preview_file)
+        FileName = "cmd.exe"; 
         #if _DEBUG
-         +"&&timeout 5";
+        AnyStringVar CmdOpt = "/K TITLE Open Preview&&";
         #else
-        ;
+        AnyStringVar CmdOpt = "/C ";
         #endif
-        WorkDir = _CAMERA_MAIN_FILE_DIRECTORY_;
-        
+        #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.preview_file));
         #var Show = _DEBUG;
+        Wait = _DEBUG;
     };
     AnyOperation &StopTrigger = .Camera.rec.TriggerOff;
     AnyOperationMacro ResetFilename = 
@@ -139,11 +139,16 @@ AnyOperationSequence Create_Video =
   };
   AnyOperationShellExec PlayVideo = 
   {
-      FileName = "cmd.exe";  
-      #var Arguments = "/C start "+ FilePathRelativeOf(..Camera.rec.ConvertVideo.out_file);
-      #var WorkDir =  FilePathCompleteOf(..OuputPath) ;
+      FileName = "cmd.exe"; 
+      #if _DEBUG
+      AnyStringVar CmdOpt = "/K TITLE Play Video&&";
+      #else
+      AnyStringVar CmdOpt = "/C ";
+      #endif
+
+      #var Arguments = CmdOpt + "call "+ strquote(FilePathCompleteOf(..Camera.rec.ConvertVideo.out_file));
       #var Show =  _DEBUG;
-      Wait = Off;
+      Wait = _DEBUG;
   };
 };
 
@@ -203,39 +208,40 @@ AnyOperationSequence Create_Video =
         
         #var AnyFileVar out_file = FilePathRelativeOf(...OuputPath) + "/"+ VIDEO_NAME + ".mp4";
         
-        #var AnyIntVar InputFrameRate = INPUT_FRAME_RATE; 
         
         #var AnyFileVar ffmpegpath = FFMPEG_PATH; 
-        #var Arguments = "/C "+ FileNameOf(ffmpegpath) + " "+iffun(OVER_WRITE, "-y ","") + "-r " + strval(InputFrameRate) +  " -start_number " +
+        #if _DEBUG
+        AnyStringVar CmdOpt = "/K TITLE Creating Video&&";
+        #else
+        AnyStringVar CmdOpt = "/C ";
+        #endif
+        
+        #var Arguments = CmdOpt + "call "+ strquote(FilePathCompleteOf(ffmpegpath)) + " "+iffun(OVER_WRITE, "-y ","") + "-r " + strval(...InputFrameRate) +  " -start_number " +
         strval(SKIP_FRAMES,COUNTER_FORMAT) + " -i "+strquote(inputfile)+ " -c:v "+
         VIDEO_OUTPUT+" -b:v 8000k -vf "+strquote("fps=30,format=yuv420p")+" -vf "+
         strquote("scale=trunc(iw/2)*2:trunc(ih/2)*2")+" -metadata author="+
-        strquote("AnyBodyTechnology")+ " " +strquote(FilePathCompleteOf(out_file))
-        #if _DEBUG
-         +"&&timeout 3";
-        #else
-        ;
-        #endif
+        strquote("AnyBodyTechnology")+ " " +strquote(FilePathCompleteOf(out_file));
 
-        AnyFileVar ffmpeg_dir = FilePathCompleteOf(ffmpegpath)+"/..";
-        #var WorkDir = ffmpeg_dir;
-        #var Show = _DEBUG ;
+        //AnyFileVar ffmpeg_dir = FilePathCompleteOf(ffmpegpath)+"/..";
+        #var WorkDir = FilePathCompleteOf(...OuputPath);
+        #var Show = _DEBUG;
       };  
       AnyOperationSequence RemoveImageFiles = 
       {
         AnyOperationShellExec DeleteOperation = 
         {
-          
-          #var FileName = "cmd.exe";
-          #var  Arguments = "/C del " + strquote(VIDEO_NAME +"*."+ IMAGE_EXT)
           #if _DEBUG
-          +"&&timeout 3";
+          AnyStringVar CmdOpt = "/K TITLE Removing Images&&";
           #else
-          ;
+          AnyStringVar CmdOpt = "/C ";
           #endif
 
+          #var FileName = "cmd.exe";
+          #var  Arguments = CmdOpt + "del " + strquote(VIDEO_NAME + "*." + IMAGE_EXT);
+
           #var WorkDir = FilePathCompleteOf(....OuputPath) ;
-          #var Show = _DEBUG ;
+          #var Show = _DEBUG;
+          Wait = _DEBUG;
         };   
       };
     };
