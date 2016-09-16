@@ -17,8 +17,9 @@ WIDTH = 1920,            # Width resolution of the video
 HEIGHT = 1080,           # Height resolution of the video
 SKIP_FRAMES = 10,        # Number of frames to skip when creating the video
 VIDEO_OUTPUT = "mpeg4",  # The video format created by the FFMPEG tool
-VIDEO_INPUT_SCALE = 2    # The ratio between video resolution and input images saved  
-                           from anybody. Default is to save images in twice the resolution. 
+VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images saved  
+                           from anybody. Default is to save images in same resolution as 
+                           the output video. 
 ) = 
 {
    // The point the camera focus on
@@ -54,9 +55,9 @@ VIDEO_INPUT_SCALE = 2    # The ratio between video resolution and input images s
 #class_template VideoLookAtCamera ( 
   VIDEO_NAME = "Cam1",
   UP_DIRECTION = y,
-  WIDTH = 1280,
-  HEIGHT = 960,
-  VIDEO_INPUT_SCALE= 2,
+  WIDTH = 1920,
+  HEIGHT = 1080,
+  VIDEO_INPUT_SCALE= 1,
   IMAGE_EXT = "png",
   COUNTER_FORMAT = "%05d",
   FFMPEG_PATH = "ffmpeg.exe",

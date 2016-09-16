@@ -11,13 +11,13 @@
 
 Main = {
   
-  VideoLookAtCamera MyCam(UP_DIRECTION=y, WIDTH = 800, HEIGHT = 600) =
+  VideoLookAtCamera MyCam(UP_DIRECTION=y, VIDEO_INPUT_SCALE = 2) =
   {       
     // The camera direction is time dependent to make a rotating camera. 
     LookPoint2Camera_direction = {cos(2*pi*Main.MyStudy.t),0,sin(2*pi*Main.MyStudy.t) };
     
     // The point in global reference which the camera looks at. 
-    LookAtPoint = Main.HumanModel.BodyModel.Trunk.SegmentsLumbar.PelvisSeg.r;
+    LookAtPoint = Main.HumanModel.BodyModel.Trunk.SegmentsLumbar.PelvisSeg.r+{0,-0.15,0};
     
     // Override the default camera counter with the time step from the study.
     // This ensures that we only save the images from the analysis. 
