@@ -29,11 +29,15 @@ Main = {
        // The background color used for the video
        BackgroundColor = {1,1,1};
        
+       // Determines the speed of the video. Setting it to 
+       // nStep/(tEnd-tStart) make the video run in real time. 
+       InputFrameRate = 10:
+       
        // The operations which should be included in the video.
        Analysis = {
-           AnyOperation &ref = Main.MyStudy.InverseDynamics;
+           AnyOperation &ref = Main.MyStudy.Kinematics;
        };
-};
+  };
 
 };
 

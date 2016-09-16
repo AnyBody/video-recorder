@@ -1,0 +1,50 @@
+// Example Model using the Camera template class and the HumanModel
+// The camera is configured to look at the pelvis and rotate around 
+// the model. 
+// 
+// See the CameraClassTemplate for detailed usage of the camera class
+
+#include "<ANYBODY_PATH_INSTALLDIR>/AMMR/Application/libdef.any"
+
+#include "CameraClassTemplate.any"
+
+
+Main = {
+  
+  VideoLookAtCamera MyCam(UP_DIRECTION=y, WIDTH = 800, HEIGHT = 600) =
+  {       
+    // The camera direction is time dependent to make a rotating camera. 
+    LookPoint2Camera_direction = {cos(2*pi*Main.MyStudy.t),0,sin(2*pi*Main.MyStudy.t) };
+    
+    // The point in global reference which the camera looks at. 
+    LookAtPoint = Main.HumanModel.BodyModel.Trunk.SegmentsLumbar.PelvisSeg.r;
+    
+    // Override the default camera counter with the time step from the study.
+    // This ensures that we only save the images from the analysis. 
+    Counter = Main.MyStudy.iStep;
+    
+    // The sequence of analysis to make the recording from.
+    Analysis = {
+      AnyOperation &ref = Main.MyStudy.Kinematics;
+    };
+  };
+  
+  // Include the HumanModel from the repository
+  #include "<ANYBODY_PATH_BODY>/HumanModel.any"
+
+  AnyBodyStudy MyStudy = {
+     AnyFolder &model = .HumanModel.BodyModelWithDefaultDrivers;
+     Gravity = {0.0, -9.81, 0.0};
+
+    // We need to include a referece to the camera to ensure the 
+    // time dependet variables update when the study runs
+    AnyFolder& Camera_referece = Main.MyCam;
+    
+    nStep = 60;
+
+  };  
+
+
+};// Main
+
+
