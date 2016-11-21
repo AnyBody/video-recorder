@@ -31,7 +31,7 @@ Main = {
        
        // Determines the speed of the video. Setting it to 
        // nStep/(tEnd-tStart) make the video run in real time. 
-       InputFrameRate = 10:
+       InputFrameRate = 10;
        
        // The operations which should be included in the video.
        Analysis = {
