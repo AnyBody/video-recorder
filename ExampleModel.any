@@ -8,7 +8,7 @@ Main = {
   // This is a simple example of using the camera class to create videos.
   VideoLookAtCamera MyCam (UP_DIRECTION = y, SKIP_FRAMES = 7) = 
   {
-       // The point the camera focus on
+       // The point the camera focus on  
        LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
        
        // The vertical field of view in meters at the LookAtPoint
@@ -22,7 +22,7 @@ Main = {
        BackgroundColor = {1,1,1};
        
        // Determines the speed of the video. Setting it to 
-       // nStep/(tEnd-tStart) make the video run in real time. 
+       // nStep/(tEnd-tStart) will make the video run in real time. 
        InputFrameRate = 10;
        
        // The operations which should be included in the video.

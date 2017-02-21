@@ -11,7 +11,7 @@
 
 Main = {
   
-  VideoLookAtCamera MyCam(UP_DIRECTION=y, VIDEO_INPUT_SCALE = 2) =
+  VideoLookAtCamera MyCam(VIDEO_NAME="Human",UP_DIRECTION=y, VIDEO_INPUT_SCALE=2) =
   {       
     // The camera direction is time dependent to make a rotating camera. 
     LookPoint2Camera_direction = {cos(2*pi*Main.MyStudy.t),0,sin(2*pi*Main.MyStudy.t) };

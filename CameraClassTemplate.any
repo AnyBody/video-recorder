@@ -64,8 +64,9 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
   SKIP_FRAMES = 0,
   OVER_WRITE = 1,
   _DEBUG = 0,
-  VIDEO_OUTPUT = "mpeg4",
-  _CLEAN_UP_IMAGES = 1
+  VIDEO_OUTPUT = "libxvid",
+  _CLEAN_UP_IMAGES = 1,
+  ANTI_ALIAS = 16
   ) 
 {
   
@@ -188,7 +189,8 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
       #var pxWidth = round(WIDTH * VIDEO_INPUT_SCALE*1.0);
       #var pxHeight = round(HEIGHT * VIDEO_INPUT_SCALE*1.0);
       #var Trig = DesignVar(Off);
-      #var ResetTrig = DesignVar(Off);    
+      #var ResetTrig = DesignVar(Off);
+      #var AntiAlias = ANTI_ALIAS;
       
       AnySwitchVar Offsetting = Off;  
       AnySwitchVar OnSetting = On;  
