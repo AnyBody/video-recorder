@@ -11,7 +11,7 @@
 
 Main = {
   
-  VideoLookAtCamera MyCam(VIDEO_NAME="Human",UP_DIRECTION=y, VIDEO_INPUT_SCALE=2) =
+  VideoLookAtCamera VideoMaker(VIDEO_NAME="Human",UP_DIRECTION=y, VIDEO_INPUT_SCALE=2) =
   {       
     // The camera direction is time dependent to make a rotating camera. 
     LookPoint2Camera_direction = {cos(2*pi*Main.MyStudy.t),0,sin(2*pi*Main.MyStudy.t) };
@@ -37,8 +37,8 @@ Main = {
      Gravity = {0.0, -9.81, 0.0};
 
     // We need to include a referece to the camera to ensure the 
-    // time dependet variables update when the study runs
-    AnyFolder& Camera_referece = Main.MyCam;
+    // time dependent variables update when the study runs
+    AnyFolder& Camera_referece = Main.VideoMaker;
     
     nStep = 60;
 
