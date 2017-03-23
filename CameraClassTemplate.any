@@ -74,8 +74,9 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
   ) 
 {
   
+  
   /// The output path where the video is saved 
-  #var AnyFileVar OutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
+  #var AnyStringVar OutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
   
   /// The point the camera focus on
   #var AnyVec3 LookAtPoint = DesignVar({0,1,0});
@@ -106,7 +107,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
     
   AnyOperationSequence Preview =  
   {
-    AnyFileVar preview_file = FilePathRelativeOf(.OutputPath) +"/" + VIDEO_NAME + "_Camera_Preview.png";  
+    AnyFileVar preview_file = .OutputPath +"/" + VIDEO_NAME + "_Camera_Preview.png";  
     AnyOperationSetValue SetFilename= 
     {
       Source = {&.preview_file}; 
@@ -189,7 +190,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
     AnyCamRecorder Recorder = {  
       AnyStringVar F = "Hack- Do not delete";
       
-      FileName = FilePathRelativeOf(..OutputPath) + "/"+ VIDEO_NAME + "_" + strval(..Counter ,COUNTER_FORMAT )+ "." + IMAGE_EXT;
+      FileName = ..OutputPath + "/"+ VIDEO_NAME + "_" + strval(..Counter ,COUNTER_FORMAT )+ "." + IMAGE_EXT;
       #var pxWidth = round(WIDTH * VIDEO_INPUT_SCALE*1.0);
       #var pxHeight = round(HEIGHT * VIDEO_INPUT_SCALE*1.0);
       #var Trig = DesignVar(Off);
@@ -225,7 +226,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
         #var FileName = "cmd.exe";
         #var AnyStringVar inputfile =  VIDEO_NAME + "_" + COUNTER_FORMAT  +"." + IMAGE_EXT;
         
-        #var AnyFileVar out_file = FilePathRelativeOf(...OutputPath) + "/"+ VIDEO_NAME + ".mp4";
+        #var AnyFileVar out_file = ...OutputPath + "/"+ VIDEO_NAME + ".mp4";
         
         
         #var AnyFileVar ffmpegpath = FFMPEG_PATH; 
@@ -249,7 +250,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
         " -metadata author="+strquote("AnyBodyTechnology")+" " +
         strquote(FilePathCompleteOf(out_file));
         
-        #var WorkDir = FilePathCompleteOf(...OutputPath);
+        #var WorkDir = ...OutputPath;
         #var Show = _DEBUG;
       };  
       AnyOperationSequence RemoveImageFiles = 
@@ -265,7 +266,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
           #var FileName = "cmd.exe";
           #var  Arguments = CmdOpt + "del " + strquote(VIDEO_NAME + "_" + "*." + IMAGE_EXT);
           
-          #var WorkDir = FilePathCompleteOf(....OutputPath) ;
+          #var WorkDir = ....OutputPath;
           #var Show = _DEBUG;
           Wait = _DEBUG;
         };   

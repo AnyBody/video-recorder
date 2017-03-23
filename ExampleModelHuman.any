@@ -21,18 +21,18 @@ Main = {
     
     // Override the default camera counter with the time step from the study.
     // This ensures that we only save the images from the analysis. 
-    Counter = Main.MyStudy.iStep;
+    Counter = Main.Study.iStep;
     
     // The sequence of analysis to make the recording from.
     Analysis = {
-      AnyOperation &ref = Main.MyStudy.Kinematics;
+      AnyOperation &ref = Main.Study.Kinematics;
     };
   };
   
   // Include the HumanModel from the repository
   #include "<ANYBODY_PATH_BODY>/HumanModel.any"
 
-  AnyBodyStudy MyStudy = {
+  AnyBodyStudy Study = {
      AnyFolder &model = .HumanModel.BodyModelWithDefaultDrivers;
      Gravity = {0.0, -9.81, 0.0};
 
