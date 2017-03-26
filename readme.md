@@ -1,17 +1,17 @@
 # Video Recorder Class
 
-This anyscript class_template will allow you to easily create videos from your models. 
+This anyscript `class_template` will allow you to easily create videos from your models. 
 
-It can be included in any model, to produce videos with a single click.
+It can be added into any model to produce videos with a single click.
 
 The camera can be configured as a fixed camera or as a moving camera to follow the certain parts of the model. 
 
-## Simple Example
+## Usage
 
-So here is quick example for those who wants to get started quickly:
+Here is a quick example for the impatient:
 
 ```c++
-// Include the Camera template class
+// Include the Camera template class (Somewhere before Main)
 #include "Path/to/Video_Camera/CameraClassTemplate.any"
 
 Main = {
@@ -30,7 +30,7 @@ Main = {
        CameraDirection  = {1, 1, -1};
        
        // The background color used for the video
-       BackgroundColor = {1,1,1};
+       BackgroundColor = {1, 1, 1};
        
        // Determines the speed of the video. Setting it to 
        // nStep/(tEnd-tStart) make the video run in real time. 
@@ -46,20 +46,40 @@ Main = {
 
 ``` 
 
-## Creating the video:
+### Previewing the camera
+
+The class does not record what model views sees. Instead the camara view is configured programatically. Class members like `CameraLookAtPoint`, `CameraDirection`, and `CameraFieldOfView` define what the camera records. This is usefull since it allows you get consistent videos. 
+
+To get a preview of what the camera records, select and run the `Preview` operation. It will collect a single frame and launch the Windows image viewer. 
+
+![image](https://cloud.githubusercontent.com/assets/1038978/24335121/950633c8-1277-11e7-8920-e17bc15ba4d3.png)
+
+
+Once you are satisfied with the camera settings of the class you are ready create a full video.
+
+
+### Creating the video
 
 To create a video simply select and run the `Create_Video` operation. That will run the model, collect the frames, convert them to a video and finally play the video.
 
-![image](https://cloud.githubusercontent.com/assets/1038978/15822983/f6fd6b8e-2bf8-11e6-88a4-f8d080f815e5.png)
+![image](https://cloud.githubusercontent.com/assets/1038978/24335125/a289d55e-1277-11e7-8075-8f823af024f5.png)
 
 The video will by default be saved together with the main file of the model. This can of course be customized as well. 
+
+
+### More examples
+
+Two examples are included here: 
+
+1. [Fast toy model to play with the settings](https://github.com/AnyBody/video-recorder/blob/restructure/ExampleModel.any)
+2. [A full human model with a camera that spins around the subject](https://github.com/AnyBody/video-recorder/blob/restructure/ExampleModelHuman.any)
 
 
 ## Class description:
 
 ### Syntax: 
 ```
-  VideoLookAtCamera <object name> (UP_DIRECTION = y) = 
+  VideoLookAtCamera <object name> (UP_DIRECTION = y, <arg>=<value>) = 
   {
     <member name> = <value>;
   }
@@ -67,7 +87,7 @@ The video will by default be saved together with the main file of the model. Thi
 
 ### Template arguments
 | Argument      | Default  | Description         |
-| --------------| ---------|:-------------------:| 
+| --------------|:--------:|-------------------| 
 |  UP_DIRECTION |  y       | The up direction of the camera. Can be x/y/z |
 |  \_OVER_WRITE |   1      | If the camra is allow to overwrite existing videos. On by default. | 
 |  _DEBUG       |   0      | Set to 1 to allow debugging the class. This will show the output of ffmpeg.|
@@ -76,7 +96,7 @@ The video will by default be saved together with the main file of the model. Thi
 
 ### Expected members:
 | Member name        |     Type     | Description         |
-| -------------------| -------------|:-------------------:| 
+| -------------------|:------------:|-------------------| 
 |  CameraLookAtPoint |   AnyVec3    | The point the camera focus on. This can be fixed point or some moving point on the model. |
 |  CameraFieldOfView |   AnyFloat   | The vertical field of view in meters at the LookAtPoint. | 
 |  CameraDirection   |   The direction which the camera is placed (In global coordinate with respect to the LookAtPoint). |
@@ -85,17 +105,17 @@ The video will by default be saved together with the main file of the model. Thi
 
 ### Optional members: 
 
+The  following class members are optional. The important/usefull are marked in *itallic*. 
 
 | Member name     |    Default   |     Type     | Description         |
-| ----------------| -------------| -------------|:-------------------:| 
-| BackgroundColor |    {1,1,1}   | AnyVec3 | The background color ({red, green, blue}) used for the video. Defaults to white. |
-| Counter         | -            | AnyInt |  Counter for numbering the saved images. This defaults to the camera class builtin counter. 
-| VideoName       |    "Cam1"    |   AnyString  | File name of the video that will be created |
-| VideoResolution | {1920, 1080} |  AnyIntArray | Resolutiono of the output video in {Hight,Width}   |
-| VideoInputScale |     1        |   AnyFloat   | The ratio between video resolution and input images saved from anybody. Default is to save images in same resolution as the output video. It is an advantage to set this to 2 or 4 when making videos with a low resolution |
-| VideoInputFrameRate | 30       | AnyInt       | Determines the speed of the video. Setting it to `nStep/(tEnd-tStart)` make the video run in real time. |
-| VideoCodec      |    "libxvid" |  AnyString   | The video codec ffmepg will use to create the video. Choose "libxvid" for best for compatibility 
-(eg. with PowerPoint) or "libx264" for best performance |
+| ----------------|:-----------:|:------------:|-------------------| 
+| *BackgroundColor* |    {1,1,1}   | AnyVec3 | The background color ({red, green, blue}) used for the video. Defaults to white. |
+| *Counter*         | -            | AnyInt |  Counter for numbering the saved images. This defaults to the camera class builtin counter. 
+| *VideoName*       |    "Cam1"    |   AnyString  | File name of the video that will be created |
+| *VideoResolution* | {1920, 1080} |  AnyIntArray | Resolutiono of the output video in {Hight,Width}   |
+| *VideoInputScale* |     1        |   AnyFloat   | The ratio between video resolution and input images saved from anybody. Default is to save images in same resolution as the output video. It is an advantage to set this to 2 or 4 when making videos with a low resolution |
+| *VideoInputFrameRate* | 30       | AnyInt       | Determines the speed of the video. Setting it to `nStep/(tEnd-tStart)` make the video run in real time. |
+| VideoCodec      |    "libxvid" |  AnyString   | The video codec ffmepg will use to create the video. Choose "libxvid" for best for compatibility (eg. with PowerPoint) or "libx264" for best performance |
 | VideoBitRate    |  8000        | AnyInt       | Video BitRate in KiloByte |
 | VideoStartFrame |   0          |  AnyInt      | This is the start frame used when creating Videos. This can be used to for skipping some of the initial frames.   |
 | VideoPathFFMPEG | "ffmpeg.exe" |  AnyString   | The path to the ffmpeg binary. Defaults to the same directory as the template class. |
