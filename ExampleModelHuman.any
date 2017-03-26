@@ -11,16 +11,25 @@
 
 Main = {
   
-  VideoLookAtCamera VideoMaker(VIDEO_NAME="Human",UP_DIRECTION=y, VIDEO_INPUT_SCALE=2) =
+  VideoLookAtCamera VideoMaker(UP_DIRECTION=y) =
   {       
+    // Filename of the video that is created.
+    VideoName = "Human";
+    
+    // Save images at double resolution and downscale when creating 
+    // the video. This will improve the video quality.
+    VideoInputScale = 2;
+    
     // The camera direction is time dependent to make a rotating camera. 
-    LookPoint2Camera_direction = {cos(2*pi*Main.MyStudy.t),0,sin(2*pi*Main.MyStudy.t) };
+    CameraDirection  = {cos(2*pi*Main.Study.t),0,sin(2*pi*Main.Study.t) };
     
     // The point in global reference which the camera looks at. 
-    LookAtPoint = Main.HumanModel.BodyModel.Trunk.SegmentsLumbar.PelvisSeg.r+{0,-0.15,0};
+    CameraLookAtPoint = Main.HumanModel.BodyModel.Trunk.SegmentsLumbar.PelvisSeg.r+{0,-0.15,0};
     
     // Override the default camera counter with the time step from the study.
     // This ensures that we only save the images from the analysis. 
+    // Note: The study must include (have a reference to) this camera template.
+    //       Otherwise the counter will not update. 
     Counter = Main.Study.iStep;
     
     // The sequence of analysis to make the recording from.

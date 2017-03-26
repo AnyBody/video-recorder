@@ -9,24 +9,26 @@ Main = {
   VideoLookAtCamera MyCam (UP_DIRECTION = y) = 
   {
        // The point the camera focus on  
-       LookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
+       CameraLookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
        
        // The vertical field of view in meters at the LookAtPoint
-       VerticalFieldOfView = 1;
+       CameraFieldOfView = 1;
        
        // The direction which the camera is placed
        // (In global coordinates with respect to the LookAtPoint)
-       LookPoint2Camera_direction = {1, 1, -1};
+       CameraDirection = {1, 1, -1};
        
        // The background color used for the video
        BackgroundColor = {1,1,1};
        
        // Determines the speed of the video. Setting it to 
        // nStep/(tEnd-tStart) will make the video run in real time. 
-       InputFrameRate = 10;
+       VideoInputFrameRate = 10;
        
        // Override the default camera counter with the time step from the study.
-       // This ensures that we only save the images from the analysis. 
+       // This ensures that we only save the images from the analysis.
+       // Note: The study must include (have a reference to) this camera template.
+       //       Otherwise the counter will not update. 
        Counter = Main.MyStudy.iStep;
        
        
@@ -247,6 +249,10 @@ AnyViaPointMuscle Quadriceps = {
     tStart = 0;
     tEnd = 2.4;
     AnyVar MomentArm = Main.MyModel.Quadriceps.LmtDot/(Main.MyModel.Knee.Vel[0]+1.0e-10);
+    
+    // This reference is important for if the camera class use the iStep variable to set the 
+    // frame counter. 
+    AnyFolder &CameraReferece = Main.MyCam;
   };
 
 };  // Main
