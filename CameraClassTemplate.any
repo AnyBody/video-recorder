@@ -10,61 +10,25 @@ EXAMPLE:
 
 Main = {
 
-VideoLookAtCamera MyCam (
-VIDEO_NAME = "MyVideo",  # File name of the video that will be created
-UP_DIRECTION = y,        # Orientation of the camera
-WIDTH = 1920,            # Width resolution of the video
-HEIGHT = 1080,           # Height resolution of the video
-SKIP_FRAMES = 10,        # Number of frames to skip when creating the video
-VIDEO_OUTPUT = "libxvid",  # The video format created by the FFMPEG tool
-VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images saved  
-                           from anybody. Default is to save images in same resolution as 
-                           the output video. It is an advantage to set this to 2 or 4 when 
-                           making videos with a low resolution.
-) = 
-{
-   // File name of the video that will be created
-   AnyString VideoName = "Cam1";
-  
-   // The point the camera focus on
-   CameraLookAtPoint = Main.MyModel.Femur.r;  
-   
-   // The vertical field of view in meters
-   CameraVerticalFieldOfView = 3;
-   
-   // The direction which the camera is placed
-   // (In global coordinate with respect to the LookAtPoint)
-   CameraDirection = {1, 1, -1}
 
-   // The background color used for the video
-   SceneBackgroundColor = {1,1,1};
-      
-   // Determines the speed of the video. Setting it to 
-   // nStep/(tEnd-tStart) will make the video run in real time. 
-   VideoInputFrameRate = 10;
-   
-
-  
-  #var AnyInt VideoWidth = 1920;
-  
-  #var AnyInt VideoHeight = 1080;
-  
-  #var AnyVar VideoInputScale = 1; 
-  
-  #var AnyString VideoCodec = "libxvid";
-  
-  #var AnyInt VideoStartFrame = 0; 
-   
-   
-   // The output path where the video is saved (Defaults to the main file directory)
-   AnyFileVar OutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
-   
-   
-   // The operations which should be included in the video.
-   Analysis = {
-       AnyOperation &ref = Main.MyStudy.InverseDynamics;
+  // This is a simple example of using the camera class to create videos.
+  VideoLookAtCamera MyCam (UP_DIRECTION = y) = 
+  {
+       // The point the camera focus on  
+       CameraLookAtPoint = Main.MyModel.Femur.Knee.r;  
+       
+       // The vertical field of view in meters at the LookAtPoint
+       CameraFieldOfView = 1;
+       
+       // The direction which the camera is placed
+       // (In global coordinates with respect to the LookAtPoint)
+       CameraDirection = {1, 1, -1};
+       
+       // The operations which should be included in the video.
+       Analysis = {
+           AnyOperation &ref = Main.MyStudy.InverseDynamics;
+       };
    };
-};
 ```
 
 # TO CREATE A VIDEO RUN THE FOLLOWING OPERATION:
@@ -76,7 +40,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
 
 #class_template VideoLookAtCamera ( 
   UP_DIRECTION = y,
-  OVER_WRITE = 1,
+  _OVER_WRITE = 1,
   _DEBUG = 0,
   _CLEAN_UP_IMAGES = 1
   ) 
@@ -85,17 +49,17 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
   /// File name of the video that will be created
   #var AnyString VideoName = "Cam1";
   
-  /// Width of the video in pixels
-  #var AnyInt VideoWidth = 1920;
   
-  /// Height of the video in pixels
-  #var AnyInt VideoHeight = 1080;
+  /// Video resolution in pixels: Defaults to FullHD
+  /// Width of the video in pixels
+  #var AnyIntArray VideoResolution = {1920,1080};
+  
   
   /// The ratio between video resolution and input images saved  
   /// from anybody. Default is to save images in same resolution as 
   /// the output video. It is an advantage to set this to 2 or 4 when 
   /// making videos with a low resolution
-  #var AnyVar VideoInputScale = 1; 
+  #var AnyFloat VideoInputScale = 1; 
   
   /// The video codec ffmepg will use to create the video. 
   /// Choose "libxvid" for best for compatibility (eg. with PowerPoint)
@@ -119,12 +83,15 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
 
   
   /// The output path where the video is saved 
-  #var AnyStringVar OutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
+  #var AnyStringVar VideoOutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
   
   /// The point the camera focus on
   #var AnyVec3 CameraLookAtPoint = DesignVar({0,1,0});
   
   
+  /// The distance from the camera to the scene. This does NOT determine the 
+  /// size of scene, since Perspective is off by default. To zoom in/out, use 
+  /// CameraFeildOfView. 
   #var AnyVar CameraDistance = DesignVar(10);
   
   /// The vertical field of view in meters at the LookAtPoint
@@ -148,9 +115,11 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
   /// camera class builtin counter. 
   #var AnyInt Counter = Camera.Recorder.Counter;
     
+  
+  /// Operation to show a preview of what the camera sees. 
   AnyOperationSequence Preview =  
   {
-    AnyFileVar preview_file = .OutputPath +"/" + .VideoName + "_Camera_Preview.png";  
+    AnyFileVar preview_file = .VideoOutputPath +"/" + .VideoName + "_Camera_Preview.png";  
     AnyOperationSetValue SetFilename= 
     {
       Source = {&.preview_file}; 
@@ -178,24 +147,71 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
   
   AnyOperationSequence Create_Video =  
   {
-    AnyOperationSequence PreProcessing = 
+    AnyOperationSequence ToogleReset = 
     {
-      AnyOperationSequence ToogleReset = 
-      {
-        AnyOperation &reset_on = ...Camera.Recorder.ResetTriggerOn; 
-        AnyOperation &reset_off = ...Camera.Recorder.ResetTriggerOff; 
-      };
-      AnyOperation &StartTrigger = ..Camera.Recorder.TriggerOn;
-    };
+      AnyOperation &reset_on = ..Camera.Recorder.ResetTriggerOn; 
+      AnyOperation &reset_off = ..Camera.Recorder.ResetTriggerOff; 
+    }
+    ;
+    AnyOperation &StartTrigger = .Camera.Recorder.TriggerOn;
+    
     AnyOperation &Operation = .Analysis;
-    AnyOperationSequence PostProcessing = 
+    
+    AnyOperation &StopTrigger = .Camera.Recorder.TriggerOff;
+    
+    AnyOperationShellExec ConvertVideo = 
     {
-      AnyOperation &StopTrigger = ..Camera.Recorder.TriggerOff;
-      AnyOperation &CreateVideo = ..Camera.Recorder.ConvertVideo;
-      #if  _CLEAN_UP_IMAGES == 1
-      AnyOperation &Cleanup= ..Camera.Recorder.RemoveImageFiles;
+      #var FileName = "cmd.exe";
+      #var AnyStringVar inputfile = ..VideoName + "_" + ..Camera.Recorder.CounterFormat +".png";
+      
+      #var AnyFileVar out_file = ..VideoOutputPath+ "/"+ ..VideoName + ".mp4";
+      
+      
+      #if _DEBUG
+      AnyStringVar CmdOpt = "/K TITLE Creating Video&&";
+      #else
+      AnyStringVar CmdOpt = "/C ";
       #endif
+      AnyFloat InputOutputScale = ..VideoInputScale;
+              
+      #var Arguments = CmdOpt +
+      "call "+strquote(FilePathCompleteOf(..VideoPathFFMPEG)) +
+      iffun(_OVER_WRITE, " -y","") +
+      " -r " + strval(..VideoInputFrameRate) +
+      " -start_number " + strval(..VideoStartFrame,..Camera.Recorder.CounterFormat) +
+      " -i "+strquote(inputfile) +
+      " -c:v "+ ..VideoCodec +
+      " -b:v 8000k"+
+      " -vf "+ strquote("fps=30,format=yuv420p")+
+      " -vf "+ strquote("scale=trunc(iw/(2*"+strval(InputOutputScale,"%g" )+"))*2:trunc(ih/(2*"+strval(InputOutputScale,"%g" )+"))*2")+
+      " -metadata author="+strquote("AnyBodyTechnology")+" " +
+      strquote(FilePathCompleteOf(out_file));
+      
+      #var WorkDir = ..VideoOutputPath;
+      #var Show = _DEBUG;
+    };  
+    
+    #if  _CLEAN_UP_IMAGES == 1
+    AnyOperationSequence RemoveImageFiles = 
+    {
+      AnyOperationShellExec DeleteOperation = 
+      {
+        #if _DEBUG
+        AnyStringVar CmdOpt = "/K TITLE Removing Images&&";
+        #else
+        AnyStringVar CmdOpt = "/C ";
+        #endif
+        
+        #var FileName = "cmd.exe";
+        #var  Arguments = CmdOpt + "del " + strquote(...VideoName+ "_" + "*.png");
+        
+        #var WorkDir = ...VideoOutputPath;
+        #var Show = _DEBUG;
+        Wait = _DEBUG;
+      };   
     };
+    #endif
+    
     AnyOperationShellExec PlayVideo = 
     {
       FileName = "cmd.exe"; 
@@ -205,7 +221,7 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
       AnyStringVar CmdOpt = "/C ";
       #endif
       
-      #var Arguments = CmdOpt + "call "+ strquote(FilePathCompleteOf(..Camera.Recorder.ConvertVideo.out_file));
+      #var Arguments = CmdOpt + "call "+ strquote(FilePathCompleteOf(.ConvertVideo.out_file));
       #var Show =  _DEBUG;
       Wait = _DEBUG;
     };
@@ -233,13 +249,13 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
     AnyCamRecorder Recorder = {  
       AnyStringVar F = ""; //< Dummy variable used to get the full name of Recorder.FileName. Do not delete it. 
       #var AnyString CounterFormat = "%04d";
-      #var pxWidth = round(..VideoWidth * ..VideoInputScale*1.0);
-      #var pxHeight = round(..VideoHeight * ..VideoInputScale*1.0);
+      #var pxWidth = round(..VideoResolution[0] * ..VideoInputScale*1.0);
+      #var pxHeight = round(..VideoResolution[1] * ..VideoInputScale*1.0);
       #var Trig = DesignVar(Off);
       #var ResetTrig = DesignVar(Off);
       #var AntiAlias = 16;
       
-      FileName = ..OutputPath + "/"+ ..VideoName + "_" + strval(..Counter , CounterFormat)+ ".png";
+      FileName = ..VideoOutputPath+ "/"+ ..VideoName + "_" + strval(..Counter , CounterFormat)+ ".png";
 
       
       AnySwitchVar Offsetting = Off;  
@@ -266,55 +282,6 @@ VIDEO_INPUT_SCALE = 1    # The ratio between video resolution and input images s
         Target = {&.ResetTrig};
       };
       
-      AnyOperationShellExec ConvertVideo = 
-      {
-        #var FileName = "cmd.exe";
-        #var AnyStringVar inputfile = ...VideoName + "_" + .CounterFormat +".png";
-        
-        #var AnyFileVar out_file = ...OutputPath + "/"+ ...VideoName + ".mp4";
-        
-        
-        #if _DEBUG
-        AnyStringVar CmdOpt = "/K TITLE Creating Video&&";
-        #else
-        AnyStringVar CmdOpt = "/C ";
-        #endif
-        AnyFloat InputOutputScale = ...VideoInputScale;
-                
-        #var Arguments = CmdOpt +
-        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
-        iffun(OVER_WRITE, " -y","") +
-        " -r " + strval(...VideoInputFrameRate) +
-        " -start_number " + strval(...VideoStartFrame,.CounterFormat) +
-        " -i "+strquote(inputfile) +
-        " -c:v "+ ...VideoCodec +
-        " -b:v 8000k"+
-        " -vf "+ strquote("fps=30,format=yuv420p")+
-        " -vf "+ strquote("scale=trunc(iw/(2*"+strval(InputOutputScale,"%g" )+"))*2:trunc(ih/(2*"+strval(InputOutputScale,"%g" )+"))*2")+
-        " -metadata author="+strquote("AnyBodyTechnology")+" " +
-        strquote(FilePathCompleteOf(out_file));
-        
-        #var WorkDir = ...OutputPath;
-        #var Show = _DEBUG;
-      };  
-      AnyOperationSequence RemoveImageFiles = 
-      {
-        AnyOperationShellExec DeleteOperation = 
-        {
-          #if _DEBUG
-          AnyStringVar CmdOpt = "/K TITLE Removing Images&&";
-          #else
-          AnyStringVar CmdOpt = "/C ";
-          #endif
-          
-          #var FileName = "cmd.exe";
-          #var  Arguments = CmdOpt + "del " + strquote(....VideoName+ "_" + "*.png");
-          
-          #var WorkDir = ....OutputPath;
-          #var Show = _DEBUG;
-          Wait = _DEBUG;
-        };   
-      };
     };
     
     AnyOperationSequence Save_Settings= {
