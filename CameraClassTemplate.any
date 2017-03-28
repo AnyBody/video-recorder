@@ -119,13 +119,14 @@ Main = {
   /// Operation to show a preview of what the camera sees. 
   AnyOperationSequence Preview =  
   {
-    AnyFileVar preview_file = .VideoOutputPath +"/" + .VideoName + "_Camera_Preview.png";  
+    AnyFileVar preview_file = .VideoOutputPath +"/" + .VideoName + "_Preview.png";  
     AnyOperationSetValue SetFilename= 
     {
       Source = {&.preview_file}; 
       Target = {&..Camera.Recorder.FileName};
     };
     AnyOperation &StartTrigger = .Camera.Recorder.TriggerOn;
+    AnyOperation &StopTrigger = .Camera.Recorder.TriggerOff;
     AnyOperationShellExec OpenPreview = 
     {
       FileName = "cmd.exe"; 
@@ -138,7 +139,6 @@ Main = {
       #var Show = _DEBUG;
       Wait = _DEBUG;
     };
-    AnyOperation &StopTrigger = .Camera.Recorder.TriggerOff;
     AnyOperationMacro ResetFilename = 
     {
       MacroStr = {"classoperation "+CompleteNameOf(..Camera.Recorder.F)+"ileName "+strquote("Reset Value")};
@@ -184,7 +184,7 @@ Main = {
       " -b:v 8000k"+
       " -vf "+ strquote("fps=30,format=yuv420p")+
       " -vf "+ strquote("scale=trunc(iw/(2*"+strval(InputOutputScale,"%g" )+"))*2:trunc(ih/(2*"+strval(InputOutputScale,"%g" )+"))*2")+
-      " -metadata author="+strquote("AnyBodyTechnology")+" " +
+      " -metadata comment="+strquote("Created with the AnyBody Modeling System.")+" " +
       strquote(FilePathCompleteOf(out_file));
       
       #var WorkDir = ..VideoOutputPath;
