@@ -40,6 +40,8 @@ Main = {
 
 #class_template VideoLookAtCamera ( 
   UP_DIRECTION = y,
+  CREATE_GIF = 0,
+  _AUTO_PLAY_VIDEOS = 1,
   _OVER_WRITE = 1,
   _DEBUG = 0,
   _CLEAN_UP_IMAGES = 1
@@ -115,6 +117,9 @@ Main = {
   /// camera class builtin counter. 
   #var AnyInt Counter = Camera.Recorder.Counter;
     
+  /// The resolution used when converting the video to a gif file. 
+  /// By default it will follow video resolution uptil 600x600. 
+  #var AnyIntArray GifResolution = {min({VideoResolution[0],600}),min({VideoResolution[1],600})} ;
   
   /// Operation to show a preview of what the camera sees. 
   AnyOperationSequence Preview =  
@@ -144,6 +149,8 @@ Main = {
       MacroStr = {"classoperation "+CompleteNameOf(..Camera.Recorder.F)+"ileName "+strquote("Reset Value")};
     };
   };
+  
+
   
   AnyOperationSequence Create_Video =  
   {
@@ -212,6 +219,11 @@ Main = {
     };
     #endif
     
+    #if CREATE_GIF == 0   
+      AnyOperation& Convert_to_gif = .Video_to_animated_gif;
+    #endif
+    
+    #if _AUTO_PLAY_VIDEOS
     AnyOperationShellExec PlayVideo = 
     {
       FileName = "cmd.exe"; 
@@ -225,7 +237,89 @@ Main = {
       #var Show =  _DEBUG;
       Wait = _DEBUG;
     };
+    #endif
+
+    
   };
+  
+  AnyOperationSequence Video_to_animated_gif =  
+  {  
+    AnyFileVar video_file = .VideoOutputPath+ "/"+ .VideoName + ".mp4";
+    AnyFileVar gif_file = .VideoOutputPath+ "/"+ .VideoName + ".gif";
+    AnyFileVar palette_file = .VideoOutputPath+ "/"+ .VideoName + "_pallete.png";  
+    AnyStringVar filters = "fps=30,scale=w=" + strval(.GifResolution[0]) +
+                            ":h=" + strval(.GifResolution[1]) + 
+                            ":force_original_aspect_ratio=decrease:flags=lanczos";
+    #if _DEBUG
+      AnyStringVar CmdOpt = "/K TITLE Generate pallete&&";
+    #else
+      AnyStringVar CmdOpt = "/C ";
+    #endif
+     
+    /// Run through the video to calculate a color pallete to use when 
+    /// generating the gif file. This improves quality a lot.
+    AnyOperationShellExec GeneratePallete = 
+    {
+      FileName = "cmd.exe";      
+      
+      Arguments = .CmdOpt +
+      "call "+strquote(FilePathCompleteOf(..VideoPathFFMPEG)) +
+      " -v warning" + 
+      " -i " + strquote(FilePathCompleteOf(.video_file)) + 
+      " -vf " + strquote(.filters + ",palettegen=stats_mode=diff") +
+      " -y " +
+      strquote(FilePathCompleteOf(.palette_file));
+      #var WorkDir = ..VideoOutputPath;
+      #var Show = _DEBUG;
+      Wait = 1;
+    };
+    
+    /// Convert video to a gif file using the color palette.
+    AnyOperationShellExec EncodeGif = 
+    {
+      FileName = "cmd.exe";      
+      
+      Arguments = .CmdOpt +
+      "call "+strquote(FilePathCompleteOf(..VideoPathFFMPEG)) +
+      " -v warning" + 
+      " -i " + strquote(FilePathCompleteOf(.video_file)) + 
+      " -i " + strquote(FilePathCompleteOf(.palette_file)) +
+      " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse") +
+      iffun(_OVER_WRITE, " -y "," ") +
+      strquote(FilePathCompleteOf(.gif_file));
+      #var WorkDir = ..VideoOutputPath;
+      #var Show = _DEBUG;   
+      Wait = 1;
+    };
+    AnyOperationShellExec DeletePallete = 
+    {
+      FileName = "cmd.exe";      
+      Arguments = .CmdOpt + "del " + strquote(FilePathCompleteOf(.palette_file));
+        
+      #var WorkDir = ..VideoOutputPath;
+      #var Show = _DEBUG;
+      Wait = _DEBUG;
+    };
+    #if _AUTO_PLAY_VIDEOS
+    AnyOperationShellExec Open_gif = 
+    {
+      FileName = "cmd.exe"; 
+      #if _DEBUG
+      AnyStringVar CmdOpt = "/K TITLE Open Gif&&";
+      #else
+      AnyStringVar CmdOpt = "/C ";
+      #endif
+      #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.gif_file));
+      #var Show = _DEBUG;
+      Wait = _DEBUG;
+    };  
+    #endif
+  };
+  
+  
+  
+  
+  
   
   
   AnyCameraLookAt Camera = {
@@ -284,8 +378,8 @@ Main = {
       
     };
     
+    
     AnyOperationSequence Save_Settings= {
-      
       AnyOperationSetValue TouchSettings = 
       {
         Source =
