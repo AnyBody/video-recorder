@@ -49,7 +49,7 @@ Main = {
 {
     
   /// File name of the video that will be created
-  #var AnyString VideoName = "Cam1";
+  #var AnyString VideoName = ANYBODY_NAME_MAINFILE;
   
   
   /// Video resolution in pixels: Defaults to FullHD
@@ -124,7 +124,9 @@ Main = {
   /// Operation to show a preview of what the camera sees. 
   AnyOperationSequence Preview =  
   {
-    AnyFileVar preview_file = .VideoOutputPath +"/" + .VideoName + "_Preview.png";  
+    #var AnyStringVar FileName = .VideoName + "_Preview.png";
+    
+    AnyFileVar preview_file = .VideoOutputPath +"/" + FileName;  
     AnyOperationSetValue SetFilename= 
     {
       Source = {&.preview_file}; 
