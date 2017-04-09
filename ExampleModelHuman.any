@@ -20,6 +20,8 @@ Main = {
     // the video. This will improve the video quality.
     VideoInputScale = 2;
     
+    VideoResolution = {1080,768};
+    
     // The camera direction is time dependent to make a rotating camera. 
     CameraDirection  = {cos(2*pi*Main.Study.t),0,sin(2*pi*Main.Study.t) };
     

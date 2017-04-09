@@ -164,15 +164,18 @@ Main = {
     
     
     #if  _CLEAN_UP_IMAGES == 1
-    AnyOperation& RemoveImageFiles = .Operations.RemoveImageFiles;
+      AnyOperation& RemoveImageFiles = .Operations.RemoveImageFiles;
     #endif
     
-    #if CREATE_GIF == 0   
-      AnyOperation& Convert_to_gif = .Operations.Video_to_animated_gif;
+    #if CREATE_GIF == 1 
+      AnyOperation& CreateAnimatedGif = .Operations.Convert_video_to_animated_gif;
     #endif
     
     #if _AUTO_PLAY_VIDEOS
-    AnyOperation& PlayVideo = .Operations.PlayVideo;
+      AnyOperation& PlayVideo = .Operations.PlayVideo;
+      #if CREATE_GIF == 1 
+        AnyOperation& PlayGif = .Operations.Open_gif;
+      #endif
     #endif
   };
   
@@ -271,7 +274,7 @@ Main = {
     };
     
     
-    AnyOperationSequence Video_to_animated_gif =  
+    AnyOperationSequence Convert_video_to_animated_gif =  
     {  
       AnyFileVar video_file = ..VideoOutputPath+ "/"+ ..VideoName + ".mp4";
       AnyFileVar gif_file = ..VideoOutputPath+ "/"+ ..VideoName + ".gif";
@@ -338,7 +341,7 @@ Main = {
       #else
       AnyStringVar CmdOpt = "/C ";
       #endif
-      #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.Video_to_animated_gif.gif_file));
+      #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.Convert_video_to_animated_gif.gif_file));
       #var Show = _DEBUG;
       Wait = _DEBUG;
     };  
