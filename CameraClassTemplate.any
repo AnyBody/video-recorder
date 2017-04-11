@@ -178,10 +178,172 @@ Main = {
       #endif
     #endif
   };
+   
   
+  
+  
+  
+  AnyCameraLookAt Camera = {
+    
+    #var Perspective = DesignVar(Off);
+    #var EyePoint = .CameraLookAtPoint + .CameraDistance *.CameraDirection;
+    
+    #var LookAtPoint = .CameraLookAtPoint;
+    
+    #var UpPoint = DesignVar(EyePoint + 100*.CameraUpDirection);
+    
+    #var FocalDist = .CameraDistance;
+    #var FocalHeight = .CameraFieldOfView;
+    
+    AnyScene Scene  = 
+    {
+      BackgroundColor = ..BackgroundColor;
+    };
 
+    
+    AnyCamRecorder Recorder = {  
+      AnyStringVar F = ""; //< Dummy variable used to get the full name of Recorder.FileName. Do not delete it. 
+      #var AnyString CounterFormat = "%04d";
+      #var pxWidth = round(..VideoResolution[0] * ..VideoInputScale*1.0);
+      #var pxHeight = round(..VideoResolution[1] * ..VideoInputScale*1.0);
+      #var Trig = DesignVar(Off);
+      #var ResetTrig = DesignVar(Off);
+      #var AntiAlias = 16;
+      
+      FileName = ..VideoOutputPath+ "/"+ ..VideoName + "_" + strval(..Counter , CounterFormat)+ ".png";
+
+      
+      AnySwitchVar Offsetting = Off;  
+      AnySwitchVar OnSetting = On;  
+      
+      AnyOperationSetValue TriggerOff = 
+      {
+        Source = { &.Offsetting}; 
+        Target = {&.Trig};
+      };
+      AnyOperationSetValue TriggerOn = 
+      {
+        Source = {&.OnSetting}; 
+        Target = {&.Trig};
+      };
+      AnyOperationSetValue ResetTriggerOff = 
+      {
+        Source = { &.Offsetting}; 
+        Target = {&.ResetTrig};
+      };
+      AnyOperationSetValue ResetTriggerOn = 
+      {
+        Source = {&.OnSetting}; 
+        Target = {&.ResetTrig};
+      };
+      
+    };
+    
+    
+    AnyOperationSequence Save_Settings= {
+      AnyOperationSetValue TouchSettings = 
+      {
+        Source =
+        {
+          &...CameraLookAtPoint,
+          &...CameraDistance, 
+          &...CameraFieldOfView, 
+          &...CameraDirection,
+          &...CameraUpDirection, 
+          &...BackgroundColor,
+          &...CameraUpDirection
+        };
+        Target = Source;  
+      };
+      AnyOperationMacro SaveValues = 
+      {
+        MacroStr = {"classoperation Main "+strquote("Save Values")+ " --file=" + strquote(...VideoName+"_Camera_Settings.anyset") };
+      };
+    };
+    AnyOperationMacro Load_Settings  = 
+    {
+      MacroStr = {"classoperation Main "+strquote("Load Values")+ " --file=" + strquote(..VideoName+"_Camera_Settings.anyset") };
+    };  
+    
+    
+    
+  };
+  
   AnyFolder Operations =
   {
+    
+    AnyOperationSequence Convert_video_to_animated_gif =  
+    {  
+      AnyFileVar video_file = ..VideoOutputPath+ "/"+ ..VideoName + ".mp4";
+      AnyFileVar gif_file = ..VideoOutputPath+ "/"+ ..VideoName + ".gif";
+      AnyFileVar palette_file = ..VideoOutputPath+ "/"+ ..VideoName + "_pallete.png";  
+      AnyStringVar filters = "fps=30,scale=w=" + strval(..GifResolution[0]) +
+                              ":h=" + strval(..GifResolution[1]) + 
+                              ":force_original_aspect_ratio=decrease:flags=lanczos";
+      #if _DEBUG
+        AnyStringVar CmdOpt = "/K TITLE Generate pallete&&";
+      #else
+        AnyStringVar CmdOpt = "/C ";
+      #endif
+       
+      /// Run through the video to calculate a color pallete to use when 
+      /// generating the gif file. This improves quality a lot.
+      AnyOperationShellExec GeneratePallete = 
+      {
+        FileName = "cmd.exe";      
+        
+        Arguments = .CmdOpt +
+        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
+        " -v warning" + 
+        " -i " + strquote(FilePathCompleteOf(.video_file)) + 
+        " -vf " + strquote(.filters + ",palettegen=stats_mode=diff") +
+        " -y " +
+        strquote(FilePathCompleteOf(.palette_file));
+        #var WorkDir = ...VideoOutputPath;
+        #var Show = _DEBUG;
+        Wait = 1;
+      };
+      
+      /// Convert video to a gif file using the color palette.
+      AnyOperationShellExec EncodeGif = 
+      {
+        FileName = "cmd.exe";      
+        
+        Arguments = .CmdOpt +
+        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
+        " -v warning" + 
+        " -i " + strquote(FilePathCompleteOf(.video_file)) + 
+        " -i " + strquote(FilePathCompleteOf(.palette_file)) +
+        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse") +
+        iffun(_OVER_WRITE, " -y "," ") +
+        strquote(FilePathCompleteOf(.gif_file));
+        #var WorkDir = ...VideoOutputPath;
+        #var Show = _DEBUG;   
+        Wait = 1;
+      };
+      AnyOperationShellExec DeletePallete = 
+      {
+        FileName = "cmd.exe";      
+        Arguments = .CmdOpt + "del " + strquote(FilePathCompleteOf(.palette_file));
+          
+        #var WorkDir = ...VideoOutputPath;
+        #var Show = _DEBUG;
+        Wait = _DEBUG;
+      };
+    };
+    AnyOperationShellExec Open_gif = 
+    {
+      FileName = "cmd.exe"; 
+      #if _DEBUG
+      AnyStringVar CmdOpt = "/K TITLE Open Gif&&";
+      #else
+      AnyStringVar CmdOpt = "/C ";
+      #endif
+      #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.Convert_video_to_animated_gif.gif_file));
+      #var Show = _DEBUG;
+      Wait = _DEBUG;
+    };      
+    
     
     AnyOperationShellExec OpenPreview = 
     {
@@ -274,170 +436,8 @@ Main = {
     };
     
     
-    AnyOperationSequence Convert_video_to_animated_gif =  
-    {  
-      AnyFileVar video_file = ..VideoOutputPath+ "/"+ ..VideoName + ".mp4";
-      AnyFileVar gif_file = ..VideoOutputPath+ "/"+ ..VideoName + ".gif";
-      AnyFileVar palette_file = ..VideoOutputPath+ "/"+ ..VideoName + "_pallete.png";  
-      AnyStringVar filters = "fps=30,scale=w=" + strval(..GifResolution[0]) +
-                              ":h=" + strval(..GifResolution[1]) + 
-                              ":force_original_aspect_ratio=decrease:flags=lanczos";
-      #if _DEBUG
-        AnyStringVar CmdOpt = "/K TITLE Generate pallete&&";
-      #else
-        AnyStringVar CmdOpt = "/C ";
-      #endif
-       
-      /// Run through the video to calculate a color pallete to use when 
-      /// generating the gif file. This improves quality a lot.
-      AnyOperationShellExec GeneratePallete = 
-      {
-        FileName = "cmd.exe";      
-        
-        Arguments = .CmdOpt +
-        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
-        " -v warning" + 
-        " -i " + strquote(FilePathCompleteOf(.video_file)) + 
-        " -vf " + strquote(.filters + ",palettegen=stats_mode=diff") +
-        " -y " +
-        strquote(FilePathCompleteOf(.palette_file));
-        #var WorkDir = ...VideoOutputPath;
-        #var Show = _DEBUG;
-        Wait = 1;
-      };
-      
-      /// Convert video to a gif file using the color palette.
-      AnyOperationShellExec EncodeGif = 
-      {
-        FileName = "cmd.exe";      
-        
-        Arguments = .CmdOpt +
-        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
-        " -v warning" + 
-        " -i " + strquote(FilePathCompleteOf(.video_file)) + 
-        " -i " + strquote(FilePathCompleteOf(.palette_file)) +
-        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse") +
-        iffun(_OVER_WRITE, " -y "," ") +
-        strquote(FilePathCompleteOf(.gif_file));
-        #var WorkDir = ...VideoOutputPath;
-        #var Show = _DEBUG;   
-        Wait = 1;
-      };
-      AnyOperationShellExec DeletePallete = 
-      {
-        FileName = "cmd.exe";      
-        Arguments = .CmdOpt + "del " + strquote(FilePathCompleteOf(.palette_file));
-          
-        #var WorkDir = ...VideoOutputPath;
-        #var Show = _DEBUG;
-        Wait = _DEBUG;
-      };
-    };
-    AnyOperationShellExec Open_gif = 
-    {
-      FileName = "cmd.exe"; 
-      #if _DEBUG
-      AnyStringVar CmdOpt = "/K TITLE Open Gif&&";
-      #else
-      AnyStringVar CmdOpt = "/C ";
-      #endif
-      #var Arguments = CmdOpt +"call "+ strquote(FilePathCompleteOf(.Convert_video_to_animated_gif.gif_file));
-      #var Show = _DEBUG;
-      Wait = _DEBUG;
-    };  
-  };
-  
-  
-  
-  
-  
-  AnyCameraLookAt Camera = {
-    
-    #var Perspective = DesignVar(Off);
-    #var EyePoint = .CameraLookAtPoint + .CameraDistance *.CameraDirection;
-    
-    #var LookAtPoint = .CameraLookAtPoint;
-    
-    #var UpPoint = DesignVar(EyePoint + 100*.CameraUpDirection);
-    
-    #var FocalDist = .CameraDistance;
-    #var FocalHeight = .CameraFieldOfView;
-    
-    AnyScene Scene  = 
-    {
-      BackgroundColor = ..BackgroundColor;
-    };
 
-    
-    AnyCamRecorder Recorder = {  
-      AnyStringVar F = ""; //< Dummy variable used to get the full name of Recorder.FileName. Do not delete it. 
-      #var AnyString CounterFormat = "%04d";
-      #var pxWidth = round(..VideoResolution[0] * ..VideoInputScale*1.0);
-      #var pxHeight = round(..VideoResolution[1] * ..VideoInputScale*1.0);
-      #var Trig = DesignVar(Off);
-      #var ResetTrig = DesignVar(Off);
-      #var AntiAlias = 16;
-      
-      FileName = ..VideoOutputPath+ "/"+ ..VideoName + "_" + strval(..Counter , CounterFormat)+ ".png";
-
-      
-      AnySwitchVar Offsetting = Off;  
-      AnySwitchVar OnSetting = On;  
-      
-      AnyOperationSetValue TriggerOff = 
-      {
-        Source = { &.Offsetting}; 
-        Target = {&.Trig};
-      };
-      AnyOperationSetValue TriggerOn = 
-      {
-        Source = {&.OnSetting}; 
-        Target = {&.Trig};
-      };
-      AnyOperationSetValue ResetTriggerOff = 
-      {
-        Source = { &.Offsetting}; 
-        Target = {&.ResetTrig};
-      };
-      AnyOperationSetValue ResetTriggerOn = 
-      {
-        Source = {&.OnSetting}; 
-        Target = {&.ResetTrig};
-      };
-      
-    };
-    
-    
-    AnyOperationSequence Save_Settings= {
-      AnyOperationSetValue TouchSettings = 
-      {
-        Source =
-        {
-          &...CameraLookAtPoint,
-          &...CameraDistance, 
-          &...CameraFieldOfView, 
-          &...CameraDirection,
-          &...CameraUpDirection, 
-          &...BackgroundColor,
-          &...CameraUpDirection
-        };
-        Target = Source;  
-      };
-      AnyOperationMacro SaveValues = 
-      {
-        MacroStr = {"classoperation Main "+strquote("Save Values")+ " --file=" + strquote(...VideoName+"_Camera_Settings.anyset") };
-      };
-    };
-    AnyOperationMacro Load_Settings  = 
-    {
-      MacroStr = {"classoperation Main "+strquote("Load Values")+ " --file=" + strquote(..VideoName+"_Camera_Settings.anyset") };
-    };  
-    
-    
-    
   };
-  
-  
   
   
   AnyOperationSequence Analysis = 
