@@ -6,7 +6,7 @@
 Main = {
 
   // This is a simple example of using the camera class to create videos.
-  VideoLookAtCamera MyCam (UP_DIRECTION = y) = 
+  VideoLookAtCamera MyCam (UP_DIRECTION = y, CREATE_GIF= 1) = 
   {
        // The point the camera focus on  
        CameraLookAtPoint = Main.MyModel.Femur.Knee.r + {0, -0.1, 0};  
@@ -18,8 +18,10 @@ Main = {
        // (In global coordinates with respect to the LookAtPoint)
        CameraDirection = {1, 1, -1};
        
+       VideoCodec = "libxvid";
+
        // The background color used for the video
-       BackgroundColor = {1,1,1};
+       BackgroundColor = {1, 1, 1};
        
        // Determines the speed of the video. Setting it to 
        // nStep/(tEnd-tStart) will make the video run in real time. 
@@ -39,7 +41,7 @@ Main = {
    };
 
 /////////////////////////////////////////////////////////////////////////////////////
-/////  The code below is just an example model used to demonstrate Camera class /////
+/////  The code below is a toy example model used to demonstrate Camera class /////
 /////////////////////////////////////////////////////////////////////////////////////
 
 AnyFolder MyModel = {
