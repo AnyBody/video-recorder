@@ -44,7 +44,8 @@ Main = {
   _AUTO_PLAY_VIDEOS = 1,
   _OVER_WRITE = 1,
   _DEBUG = 0,
-  _CLEAN_UP_IMAGES = 1
+  _CLEAN_UP_IMAGES = 1,
+  _AUTO_OPEN_PREVIEW_ = 1
   ) 
 {
     
@@ -140,8 +141,9 @@ Main = {
     };
     AnyOperation &StartTrigger = .Operations.StartTrigger;
     AnyOperation &StopTrigger = .Operations.StopTrigger;
+    #if _AUTO_OPEN_PREVIEW_
     AnyOperation& OpenPreview = .Operations.OpenPreview;
-
+    #endif
     AnyOperationMacro ResetFilename = 
     {
       MacroStr = {"classoperation "+CompleteNameOf(..Camera.Recorder.F)+"ileName "+strquote("Reset Value")};
