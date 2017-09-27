@@ -44,7 +44,8 @@ Main = {
   _AUTO_PLAY_VIDEOS = 1,
   _OVER_WRITE = 1,
   _DEBUG = 0,
-  _CLEAN_UP_IMAGES = 1
+  _CLEAN_UP_IMAGES = 1,
+  _AUTO_OPEN_PREVIEW_ = 1
   ) 
 {
     
@@ -81,8 +82,11 @@ Main = {
   
   /// Determines the speed of the video. Setting it to 
   /// nStep/(tEnd-tStart) make the video run in real time. 
-  #var AnyIntVar VideoInputFrameRate = 30; 
+  #var AnyIntVar VideoInputFrameRate = 24; 
 
+  
+  /// Video output framerate. 
+  #var AnyIntVar VideoOutputFrameRate = 24;
   
   /// The output path where the video is saved 
   #var AnyStringVar VideoOutputPath = _CAMERA_MAIN_FILE_DIRECTORY_;
@@ -121,7 +125,9 @@ Main = {
   /// By default it will follow video resolution uptil 600x600. 
   #var AnyIntArray GifResolution = {min({VideoResolution[0],600}),min({VideoResolution[1],600})} ;
   
-  
+  /// Video output framerate. 
+  #var AnyIntVar GifOutputFrameRate = VideoOutputFrameRate;
+
   
   
   /// Operation to show a preview of what the camera sees. 
@@ -140,8 +146,9 @@ Main = {
     };
     AnyOperation &StartTrigger = .Operations.StartTrigger;
     AnyOperation &StopTrigger = .Operations.StopTrigger;
+    #if _AUTO_OPEN_PREVIEW_
     AnyOperation& OpenPreview = .Operations.OpenPreview;
-
+    #endif
     AnyOperationMacro ResetFilename = 
     {
       MacroStr = {"classoperation "+CompleteNameOf(..Camera.Recorder.F)+"ileName "+strquote("Reset Value")};
@@ -277,7 +284,7 @@ Main = {
       AnyFileVar video_file = ..VideoOutputPath+ "/"+ ..VideoName + ".mp4";
       AnyFileVar gif_file = ..VideoOutputPath+ "/"+ ..VideoName + ".gif";
       AnyFileVar palette_file = ..VideoOutputPath+ "/"+ ..VideoName + "_pallete.png";  
-      AnyStringVar filters = "fps=30,scale=w=" + strval(..GifResolution[0]) +
+      AnyStringVar filters = "fps="+strval(..GifOutputFrameRate)+",scale=w=" + strval(..GifResolution[0]) +
                               ":h=" + strval(..GifResolution[1]) + 
                               ":force_original_aspect_ratio=decrease:flags=lanczos";
       #if _DEBUG
@@ -308,13 +315,13 @@ Main = {
       AnyOperationShellExec EncodeGif = 
       {
         FileName = "cmd.exe";      
-        
+        //
         Arguments = .CmdOpt +
         "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
         " -v warning" + 
         " -i " + strquote(FilePathCompleteOf(.video_file)) + 
         " -i " + strquote(FilePathCompleteOf(.palette_file)) +
-        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse") +
+        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse=dither=floyd_steinberg:diff_mode=rectangle") +
         iffun(_OVER_WRITE, " -y "," ") +
         strquote(FilePathCompleteOf(.gif_file));
         #var WorkDir = ...VideoOutputPath;
@@ -395,7 +402,7 @@ Main = {
       " -i "+strquote(inputfile) +
       " -c:v "+ ..VideoCodec +
       " -b:v 8000k"+
-      " -vf "+ strquote("fps=30,format=yuv420p")+
+      " -vf "+ strquote("fps="+strval(..VideoOutputFrameRate)+",format=yuv420p")+
       " -vf "+ strquote("scale=trunc(iw/(2*"+strval(InputOutputScale,"%g" )+"))*2:trunc(ih/(2*"+strval(InputOutputScale,"%g" )+"))*2")+
       " -metadata comment="+strquote("Created with the AnyBody Modeling System.")+" " +
       strquote(FilePathCompleteOf(out_file));
