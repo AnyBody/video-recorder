@@ -315,13 +315,13 @@ Main = {
       AnyOperationShellExec EncodeGif = 
       {
         FileName = "cmd.exe";      
-        
+        //
         Arguments = .CmdOpt +
         "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
         " -v warning" + 
         " -i " + strquote(FilePathCompleteOf(.video_file)) + 
         " -i " + strquote(FilePathCompleteOf(.palette_file)) +
-        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse") +
+        " -lavfi " + strquote(.filters + " [x]; [x][1:v] paletteuse=dither=floyd_steinberg:diff_mode=rectangle") +
         iffun(_OVER_WRITE, " -y "," ") +
         strquote(FilePathCompleteOf(.gif_file));
         #var WorkDir = ...VideoOutputPath;
