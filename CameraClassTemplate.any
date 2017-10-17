@@ -57,6 +57,9 @@ Main = {
   /// Width of the video in pixels
   #var AnyIntArray VideoResolution = {1920,1080};
   
+  /// From FFMPEG: The range of the quantizer scale is 0-51: where 0 is lossless,
+  /// and 51 is worst possible. A lower value is a higher quality.
+  #var AnyIntVar ConstantRateFactor = 15;
   
   /// The ratio between video resolution and input images saved  
   /// from anybody. Default is to save images in same resolution as 
@@ -67,7 +70,7 @@ Main = {
   /// The video codec ffmepg will use to create the video. 
   /// Choose "libxvid" for best for compatibility (eg. with PowerPoint)
   /// or "libx264" for best performance
-  #var AnyString VideoCodec = "libxvid";
+  #var AnyString VideoCodec = "libx264";
   
   /// This is the start frame used when creating Videos. This can be used to 
   /// for skipping some of the initial frames. 
@@ -393,16 +396,15 @@ Main = {
       AnyStringVar CmdOpt = "/C ";
       #endif
       AnyFloat InputOutputScale = ..VideoInputScale;
-              
+
       #var Arguments = CmdOpt +
       "call "+strquote(FilePathCompleteOf(..VideoPathFFMPEG)) +
       iffun(_OVER_WRITE, " -y","") +
       " -r " + strval(..VideoInputFrameRate) +
       " -start_number " + strval(..VideoStartFrame,..Camera.Recorder.CounterFormat) +
       " -i "+strquote(inputfile) +
-      " -c:v "+ ..VideoCodec +
-      " -b:v 8000k"+
-      " -vf "+ strquote("fps="+strval(..VideoOutputFrameRate)+",format=yuv420p")+
+      "  -c:v " + ..VideoCodec + " -crf "+ strval(..ConstantRateFactor)+" -profile:v baseline -level 3.0 -pix_fmt yuv420p -c:a aac -ac 2 -strict experimental -b:a 128k -movflags faststart"+
+      " -vf "+ strquote("fps="+strval(..VideoOutputFrameRate))+
       " -vf "+ strquote("scale=trunc(iw/(2*"+strval(InputOutputScale,"%g" )+"))*2:trunc(ih/(2*"+strval(InputOutputScale,"%g" )+"))*2")+
       " -metadata comment="+strquote("Created with the AnyBody Modeling System.")+" " +
       strquote(FilePathCompleteOf(out_file));
