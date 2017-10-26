@@ -45,7 +45,8 @@ Main = {
   _OVER_WRITE = 1,
   _DEBUG = 0,
   _CLEAN_UP_IMAGES = 1,
-  _AUTO_OPEN_PREVIEW_ = 1
+  _AUTO_OPEN_PREVIEW_ = 1,
+  FFMPEG_ON_PATH = 1
   ) 
 {
     
@@ -59,7 +60,7 @@ Main = {
   
   /// From FFMPEG: The range of the quantizer scale is 0-51: where 0 is lossless,
   /// and 51 is worst possible. A lower value is a higher quality.
-  #var AnyIntVar ConstantRateFactor = 15;
+  #var AnyIntVar ConstantRateFactor = 11;
   
   /// The ratio between video resolution and input images saved  
   /// from anybody. Default is to save images in same resolution as 
@@ -77,8 +78,13 @@ Main = {
   #var AnyInt VideoStartFrame = 0; 
 
   
+  #if FFMPEG_ON_PATH == 0
   /// The path to the ffmpeg binary. 
-  #var AnyFileVar VideoPathFFMPEG = "ffmpeg.exe";
+  #var AnyFileVar RelativeFFMPEGPath = "ffmpeg.exe";
+  #var AnyStringVar VideoPathFFMPEG = FilePathCompleteOf(RelativeFFMPEGPath);
+  #else
+  #var AnyStringVar VideoPathFFMPEG = "ffmpeg.exe";
+  #endif
   
   /// Video BitRate in KiloByte
   #var AnyInt VideoBitRate = 8000;
@@ -303,7 +309,7 @@ Main = {
         FileName = "cmd.exe";      
         
         Arguments = .CmdOpt +
-        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
+        "call "+strquote(...VideoPathFFMPEG) +
         " -v warning" + 
         " -i " + strquote(FilePathCompleteOf(.video_file)) + 
         " -vf " + strquote(.filters + ",palettegen=stats_mode=diff") +
@@ -320,7 +326,7 @@ Main = {
         FileName = "cmd.exe";      
         //
         Arguments = .CmdOpt +
-        "call "+strquote(FilePathCompleteOf(...VideoPathFFMPEG)) +
+        "call "+strquote(...VideoPathFFMPEG) +
         " -v warning" + 
         " -i " + strquote(FilePathCompleteOf(.video_file)) + 
         " -i " + strquote(FilePathCompleteOf(.palette_file)) +
@@ -398,7 +404,7 @@ Main = {
       AnyFloat InputOutputScale = ..VideoInputScale;
 
       #var Arguments = CmdOpt +
-      "call "+strquote(FilePathCompleteOf(..VideoPathFFMPEG)) +
+      "call "+strquote(..VideoPathFFMPEG) +
       iffun(_OVER_WRITE, " -y","") +
       " -r " + strval(..VideoInputFrameRate) +
       " -start_number " + strval(..VideoStartFrame,..Camera.Recorder.CounterFormat) +
