@@ -1,5 +1,13 @@
 # Video Recorder Class
 
+> **Notice:** This `class_template` is now included in the AMMR. 
+>
+> Just add the following to the top of your model:
+> ```c++
+>  #include "<ANYBODY_PATH_MODELUTILS>/Video/CameraClassTemplate.any"
+> ```
+> This repository is still usefull as an example on how to use the class template.
+
 This anyscript `class_template` will allow you to easily create videos from your
 models.
 
